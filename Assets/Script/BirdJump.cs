@@ -6,13 +6,12 @@ using UnityEngine.SceneManagement;
 public class BirdJump : MonoBehaviour
 {
 
-    //Rigidbody2D rb;
-    //public float jumpPower;
+    Rigidbody2D rb;
+    public float jumpPower;
 
     public float shotVelocity;
     public float shotAngle;
 
-    private Rigidbody2D ballRB2D;
     private bool isGround = true;
     private bool isCenter = false;
     private float totalTime = 0f;
@@ -20,8 +19,7 @@ public class BirdJump : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //rb = GetComponent<Rigidbody2D>();
-        ballRB2D = GetComponent<Rigidbody2D>();
+        rb = GetComponent<Rigidbody2D>();
     }
 
     // Update is called once per frame
@@ -30,49 +28,16 @@ public class BirdJump : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             GetComponent<AudioSource>().Play();
-            StartCoroutine(ShotBall());
-            //rb.velocity = Vector2.up * jumpPower;
-        }
-    }
-
-    IEnumerator ShotBall()
-    {
-        Debug.Log("=== Simulation ===");
-
-        isGround = false;
-        // 공의 각도를 설정
-        transform.right = new Vector2(Mathf.Cos(shotAngle * Mathf.Deg2Rad), Mathf.Sin(shotAngle * Mathf.Deg2Rad));
-        // 설정된 각도 shotVelocity 속도로 발사
-        ballRB2D.velocity = transform.right * shotVelocity;
-
-        totalTime = 0f;
-        while (true)
-        {
-            yield return null;
-            // 착지하면 while문 종료
-            if (isGround) break;
-            // 작치자히 전까지는 계속 시간 측정
-            totalTime += Time.deltaTime;
-
-            // y축의 속도의 절대값이 0.1보다 작을때 isCenter == false일때(딱 한번만 발동)
-            if (Mathf.Abs(ballRB2D.velocity.y) < 0.1f && !isCenter)
-            {
-
-                isCenter = true;
-                Debug.Log("CenterHeight: " + transform.position.y);
-            }
+            rb.velocity = Vector2.up * jumpPower;
         }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-
         // 그라운드에 착지
-        if (collision.gameObject.tag == "Ground")
+        if (collision.gameObject.CompareTag("Ground"))
         {
             isGround = true;
-            // 더이상 움지기지 않게 하기 위해 속도는 0
-            ballRB2D.velocity = Vector2.zero;
             //총 걸린 시간
             Debug.Log("Totaltime: " + totalTime);
             // 초기위치가 -8에서 시작 했기 때문에 +8로 보정 (총 이동거리)
@@ -80,7 +45,7 @@ public class BirdJump : MonoBehaviour
 
             Verification();
         }
-        else if(collision.gameObject.tag != "Ground")
+        else if(!collision.gameObject.CompareTag("Ground"))
         {
             if (Score.score > Score.bestScore)
             {
