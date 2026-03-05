@@ -12,20 +12,22 @@ public class BirdJump : MonoBehaviour
     public float rotationSmooth = 10f;
 
     private Rigidbody2D ballRB2D;
-    private bool isDead;
+    private bool _isDead;
+    private AudioSource _audioSource;
 
-    void Start()
+    private void Start()
     {
+        _audioSource = GetComponent<AudioSource>();
         ballRB2D = GetComponent<Rigidbody2D>();
     }
 
-    void Update()
+    private void Update()
     {
-        if (isDead) return;
+        if (_isDead) return;
 
         if (Input.GetMouseButtonDown(0))
         {
-            GetComponent<AudioSource>().Play();
+            _audioSource.Play();
             Flap();
         }
 
@@ -34,29 +36,30 @@ public class BirdJump : MonoBehaviour
 
     private void Flap()
     {
-        Vector2 velocity = ballRB2D.velocity;
+        var velocity = ballRB2D.velocity;
         velocity.y = flapForce;
         ballRB2D.velocity = velocity;
     }
 
     private void UpdateRotation()
     {
-        float verticalVelocity = ballRB2D.velocity.y;
-        float t = Mathf.InverseLerp(-10f, 10f, verticalVelocity);
-        float targetAngle = Mathf.Lerp(maxDownAngle, maxUpAngle, t);
+        var verticalVelocity = ballRB2D.velocity.y;
+        var t = Mathf.InverseLerp(-10f, 10f, verticalVelocity);
+        var targetAngle = Mathf.Lerp(maxDownAngle, maxUpAngle, t);
         Quaternion targetRotation = Quaternion.Euler(0f, 0f, targetAngle);
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotationSmooth * Time.deltaTime);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Ground"))
+        if (_isDead)
         {
-            isDead = true;
-            ballRB2D.velocity = Vector2.zero;
-            ballRB2D.simulated = false;
             return;
         }
+
+        _isDead = true;
+        ballRB2D.velocity = Vector2.zero;
+        ballRB2D.simulated = false;
 
         if (Score.score > Score.bestScore)
         {
